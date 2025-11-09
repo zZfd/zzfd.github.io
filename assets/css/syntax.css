@@ -1,164 +1,308 @@
-.highlight table td { padding: 5px; }
-.highlight table pre { margin: 0; }
+/* Modern Code Syntax Highlighting - One Dark Pro Theme */
+
+/* Code block container styles */
 .highlight {
-  color: #faf6e4;
-  background-color: #122b3b;
+  background-color: #282c34;
+  color: #abb2bf;
+  border-radius: 8px;
+  padding: 0;
+  margin: 1.5em 0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-family: 'Fira Code', 'Monaco', 'Consolas', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.6;
 }
-.highlight .gl {
-  color: #dee5e7;
-  background-color: #4e5d62;
+
+/* Pre tag inside highlight */
+.highlight pre {
+  margin: 0;
+  padding: 1.2em 1.5em;
+  overflow-x: auto;
+  background: transparent;
+  border: none;
 }
-.highlight .c, .highlight .cd, .highlight .cm, .highlight .c1, .highlight .cs {
-  color: #6c8b9f;
+
+/* Table for line numbers */
+.highlight table {
+  margin: 0;
+  border-spacing: 0;
+  border: none;
+  width: 100%;
+}
+
+.highlight table td {
+  padding: 0;
+  border: none;
+}
+
+.highlight table td.gutter {
+  width: 3em;
+  text-align: right;
+  padding-right: 1em;
+  color: #5c6370;
+  user-select: none;
+  border-right: 1px solid #3e4451;
+}
+
+.highlight table td.code {
+  padding-left: 1em;
+}
+
+.highlight table pre {
+  padding: 1.2em 0;
+}
+
+/* Syntax token colors - One Dark Pro inspired */
+
+/* Comments */
+.highlight .c,
+.highlight .cd,
+.highlight .cm,
+.highlight .c1,
+.highlight .cs {
+  color: #5c6370;
   font-style: italic;
 }
-.highlight .cp {
-  color: #b2fd6d;
-  font-weight: bold;
-  font-style: italic;
+
+/* Keywords (if, else, function, etc.) */
+.highlight .k,
+.highlight .kd,
+.highlight .kv,
+.highlight .kc,
+.highlight .kr,
+.highlight .kp {
+  color: #c678dd;
+  font-weight: normal;
 }
+
+/* Keyword namespace/import */
+.highlight .kn {
+  color: #c678dd;
+}
+
+/* Operators */
+.highlight .o,
+.highlight .ow {
+  color: #56b6c2;
+}
+
+/* Punctuation */
+.highlight .p,
+.highlight .pi {
+  color: #abb2bf;
+}
+
+/* Strings */
+.highlight .s,
+.highlight .sb,
+.highlight .sd,
+.highlight .s2,
+.highlight .sh,
+.highlight .sx,
+.highlight .sr,
+.highlight .s1 {
+  color: #98c379;
+}
+
+/* String escape sequences */
+.highlight .se,
+.highlight .sc,
+.highlight .si {
+  color: #56b6c2;
+}
+
+/* Numbers */
+.highlight .m,
+.highlight .mf,
+.highlight .mh,
+.highlight .mi,
+.highlight .il,
+.highlight .mo,
+.highlight .mb,
+.highlight .mx {
+  color: #d19a66;
+}
+
+/* Functions */
+.highlight .nf,
+.highlight .fm {
+  color: #61afef;
+}
+
+/* Classes, Types */
+.highlight .nc,
+.highlight .kt,
+.highlight .no,
+.highlight .nd,
+.highlight .nn,
+.highlight .bp {
+  color: #e5c07b;
+}
+
+/* Variables */
+.highlight .nv,
+.highlight .vc,
+.highlight .vg,
+.highlight .vi {
+  color: #e06c75;
+}
+
+/* Attributes */
+.highlight .na,
+.highlight .py {
+  color: #d19a66;
+}
+
+/* Built-in functions */
+.highlight .nb,
+.highlight .ni {
+  color: #e5c07b;
+}
+
+/* HTML/XML tags */
+.highlight .nt {
+  color: #e06c75;
+}
+
+/* HTML/XML tag attributes */
+.highlight .nl {
+  color: #d19a66;
+}
+
+/* Symbols */
+.highlight .ss {
+  color: #98c379;
+}
+
+/* Errors */
 .highlight .err {
-  color: #fefeec;
-  background-color: #cc0000;
+  color: #e06c75;
+  background: transparent;
 }
-.highlight .gr {
-  color: #fefeec;
-  background-color: #cc0000;
-}
-.highlight .k, .highlight .kd, .highlight .kv {
-  color: #f6dd62;
-  font-weight: bold;
-}
-.highlight .o, .highlight .ow {
-  color: #4df4ff;
-}
-.highlight .p, .highlight .pi {
-  color: #4df4ff;
-}
-.highlight .gd {
-  color: #cc0000;
-}
+
+/* Additions (git diff) */
 .highlight .gi {
-  color: #b2fd6d;
+  color: #98c379;
+  background: rgba(152, 195, 121, 0.1);
 }
+
+/* Deletions (git diff) */
+.highlight .gd {
+  color: #e06c75;
+  background: rgba(224, 108, 117, 0.1);
+}
+
+/* Generic Emphasis */
 .highlight .ge {
   font-style: italic;
 }
+
+/* Generic Strong */
 .highlight .gs {
   font-weight: bold;
 }
-.highlight .gt {
-  color: #dee5e7;
-  background-color: #4e5d62;
-}
-.highlight .kc {
-  color: #f696db;
-  font-weight: bold;
-}
-.highlight .kn {
-  color: #ffb000;
-  font-weight: bold;
-}
-.highlight .kp {
-  color: #ffb000;
-  font-weight: bold;
-}
-.highlight .kr {
-  color: #ffb000;
-  font-weight: bold;
-}
-.highlight .gh {
-  color: #ffb000;
-  font-weight: bold;
-}
+
+/* Generic Heading */
+.highlight .gh,
 .highlight .gu {
-  color: #ffb000;
+  color: #61afef;
   font-weight: bold;
 }
-.highlight .kt {
-  color: #b2fd6d;
-  font-weight: bold;
+
+/* Generic Line */
+.highlight .gl {
+  background: #3e4451;
 }
-.highlight .no {
-  color: #b2fd6d;
-  font-weight: bold;
+
+/* Generic Traceback */
+.highlight .gt {
+  color: #e06c75;
 }
-.highlight .nc {
-  color: #b2fd6d;
-  font-weight: bold;
-}
-.highlight .nd {
-  color: #b2fd6d;
-  font-weight: bold;
-}
-.highlight .nn {
-  color: #b2fd6d;
-  font-weight: bold;
-}
-.highlight .bp {
-  color: #b2fd6d;
-  font-weight: bold;
-}
-.highlight .ne {
-  color: #b2fd6d;
-  font-weight: bold;
-}
-.highlight .nl {
-  color: #ffb000;
-  font-weight: bold;
-}
-.highlight .nt {
-  color: #ffb000;
-  font-weight: bold;
-}
-.highlight .m, .highlight .mf, .highlight .mh, .highlight .mi, .highlight .il, .highlight .mo, .highlight .mb, .highlight .mx {
-  color: #f696db;
-  font-weight: bold;
-}
-.highlight .ld {
-  color: #f696db;
-  font-weight: bold;
-}
-.highlight .ss {
-  color: #f696db;
-  font-weight: bold;
-}
-.highlight .s, .highlight .sb, .highlight .sd, .highlight .s2, .highlight .sh, .highlight .sx, .highlight .sr, .highlight .s1 {
-  color: #fff0a6;
-  font-weight: bold;
-}
-.highlight .se {
-  color: #4df4ff;
-  font-weight: bold;
-}
-.highlight .sc {
-  color: #4df4ff;
-  font-weight: bold;
-}
-.highlight .si {
-  color: #4df4ff;
-  font-weight: bold;
-}
-.highlight .nb {
-  font-weight: bold;
-}
-.highlight .ni {
-  color: #999999;
-  font-weight: bold;
-}
+
+/* Whitespace */
 .highlight .w {
-  color: #BBBBBB;
+  color: #abb2bf;
 }
-.highlight .nf {
-  color: #a8e1fe;
+
+/* Language-specific enhancements */
+
+/* CSS/SCSS */
+.highlight .nc {
+  color: #e5c07b;
 }
-.highlight .py {
-  color: #a8e1fe;
+
+/* JSON keys */
+.language-json .highlight .nl {
+  color: #e06c75;
 }
-.highlight .na {
-  color: #a8e1fe;
+
+/* JavaScript/TypeScript specific */
+.language-javascript .highlight .nx,
+.language-typescript .highlight .nx {
+  color: #abb2bf;
 }
-.highlight .nv, .highlight .vc, .highlight .vg, .highlight .vi {
-  color: #a8e1fe;
-  font-weight: bold;
+
+/* Inline code blocks */
+code.highlighter-rouge {
+  background: #f6f8fa;
+  color: #24292e;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: 'Fira Code', 'Monaco', 'Consolas', 'Courier New', monospace;
+  font-size: 85%;
+  border: 1px solid #e1e4e8;
+}
+
+/* Scrollbar styling for code blocks */
+.highlight pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+.highlight pre::-webkit-scrollbar-track {
+  background: #21252b;
+  border-radius: 4px;
+}
+
+.highlight pre::-webkit-scrollbar-thumb {
+  background: #4e5666;
+  border-radius: 4px;
+}
+
+.highlight pre::-webkit-scrollbar-thumb:hover {
+  background: #5c6370;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .highlight {
+    border-radius: 6px;
+    margin: 1em 0;
+  }
+
+  .highlight pre {
+    padding: 1em;
+    font-size: 13px;
+  }
+
+  .highlight table td.gutter {
+    width: 2.5em;
+    padding-right: 0.8em;
+  }
+}
+
+/* Print styles */
+@media print {
+  .highlight {
+    background: #fff;
+    color: #000;
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  .highlight .c,
+  .highlight .cm,
+  .highlight .c1 {
+    color: #666;
+  }
 }

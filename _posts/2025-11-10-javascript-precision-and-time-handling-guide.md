@@ -2,7 +2,7 @@
 layout: post
 title: "告别精度陷阱：JavaScript 数值与时间处理终极指南"
 date: 2025-11-10 12:00:00 +0800
-categories: 技术实践
+categories: 所思
 tags: JavaScript 精度 最佳实践
 ---
 
@@ -62,16 +62,6 @@ price_in_cents INT -- 存储 1999，代表 19.99 元
 **3. 前后端传输**
 
 后端直接返回以“分”为单位的整数，前端负责转换和展示。
-
-{% highlight javascript %}
-// 后端返回: { priceInCents: 1999 }
-
-// 前端转换为“元”用于展示
-const priceInYuan = priceInCents / 100; // 19.99
-
-// 更安全的做法
-const priceInYuan = new Decimal(priceInCents).div(100).toNumber();
-{% endhighlight %}
 
 **4. 前端显示：`Intl.NumberFormat`**
 
@@ -191,7 +181,7 @@ const formatted = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 | :----------- | :--------------- | :------------- | :--------------------- |
 | **金额计算** | `decimal.js`     | -              | 运算层，保证过程精确   |
 | **金额存储** | 最小单位（分）   | `INT`/`BIGINT` | 数据层，杜绝浮点数     |
-| **百分比**   | 放大万倍         | `INT`          | 支持两位小数，整数存储 |
+| **百分比**   | 放大百倍         | `INT`          | 支持两位小数，整数存储 |
 | **时间存储** | `TIMESTAMPTZ(3)` | `TIMESTAMP`    | 带时区，毫秒精度       |
 | **时间传输** | ISO 8601         | `STRING`       | 跨系统通信标准         |
 | **时间操作** | `date-fns`       | -              | 功能库，避免手动计算   |
