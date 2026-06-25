@@ -72,6 +72,36 @@ This is a Jekyll-based blog hosted on GitHub Pages. The blog is built using Ruby
 - Supported languages: `json`, `js`, `wxml`, `wxss`, `html`, `css`, `python`, etc.
 - For images: `<img src="{{site.baseurl}}/assets/res/filename.png" alt="description"/>`
 
+## Technical Writing Principles (技术文档写作准则)
+
+These rules govern how to turn project experience into blog posts. **They are mandatory for any technical post derived from real work.** The goal is to produce **deep, vendor-neutral, referenceable technical documents** — not code walkthroughs and not company-specific case studies.
+
+### Core principle: Distill, don't transcribe (蒸馏，而非搬运)
+
+We are **沉淀项目经验、技术积累** — distilling project experience into reusable knowledge. We are **NOT** analyzing or documenting a codebase. When source code informs a post, the code is *research input* used to learn what's true; the post itself must **abstract, distill, and generalize** the lessons into the universal technical solution.
+
+> Litmus test: a reader who has never seen our codebase, and never will, should find the article completely self-contained and useful for their *own* unrelated project. If a sentence only makes sense to someone with repo access, rewrite or cut it.
+
+### DO (必须):
+
+- ✓ **Write from the generic technical-solution angle.** Frame every topic as "how this *class* of problem is solved," not "what our project did."
+- ✓ **Keep the correct, recommended approach.** Document the *right way* to do it, distilled from experience — even if the real implementation took a shortcut. Present best practice; note tradeoffs as design axes.
+- ✓ **Cover principles and architecture.** Explain the underlying mechanism (protocols, models, why it works), not just the recipe.
+- ✓ **Use illustrative/abstract examples.** Generic names (`_service._tcp`, `deviceId`, `REQUEST_TIMEOUT`), example values clearly framed as "典型取值", pseudo-code marked "示意".
+- ✓ **Present tradeoffs honestly as decision spaces.** Where the real system made a compromise (e.g. plaintext + static key under a closed-network trust assumption), generalize it into "here are the axes and when each choice is acceptable" — honesty about boundaries over false completeness.
+
+### DON'T (禁止):
+
+- ✗ **No project/business background.** Strip the domain story (industry, product names, who the devices are, the business scenario). The problem domain should be stated abstractly (e.g. "LAN device discovery", not a specific industry's named terminals/screens).
+- ✗ **No real definitions or values.** Never publish real service-type strings, instance-name schemes, TXT field names, header names, port ranges, internal constants, or any literal secret/key. Desensitize to generic placeholders.
+- ✗ **No "how our two platforms differ" minutiae.** Skip implementation-divergence details (e.g. "iOS does X but Android does Y"). State the *one correct approach*; mention platforms only at the level needed to explain the abstraction.
+- ✗ **No code-archaeology framing.** Don't write "the code does X at file:line", don't catalog quirks, dead code, or "type says A but native does B" findings. Those belong in research notes, never in the published doc.
+- ✗ **No idealized claims dressed as fact.** When documenting best practice the real code didn't follow, present it as the recommended approach ("应当…"), not as "we did…".
+
+### Depth bar
+
+A good post here is something the author could **re-read in a year and still learn from**, and that a peer could **cite as a design reference**. Aim for: clear problem framing → the underlying principle → the recommended solution → the honest tradeoffs. Prefer one well-distilled deep article over a shallow feature tour.
+
 ## Development Workflow
 
 ### Starting the Development Server

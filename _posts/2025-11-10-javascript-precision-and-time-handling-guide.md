@@ -41,29 +41,63 @@ const total = price.times(quantity); // 结果：'59.97'
 const result = total.toFixed(2); // '59.97'
 {% endhighlight %}
 
-**2. 存储层：使用最小货币单位**
+> 如果后端使用 ORM，往往无需额外引入 `decimal.js`。例如 Prisma 自带 `Prisma.Decimal`（底层正是 decimal.js），可直接用 `.plus()` / `.minus()` / `.mul()` / `.gte()` 等方法做定点运算；前端再按需引入 `decimal.js` 即可。
 
-在数据库中，将金额乘以 100（或 10000，取决于业务精度要求），转换为“分”这样的最小整数单位进行存储。
+**2. 存储层：优先 `DECIMAL`，其次 `BigInt`**
+
+金额到底用「定点小数 `DECIMAL`」还是「整数最小单位（分）」，社区争论已久。结合多个生产项目的实践，我现在的结论很明确：**优先 `DECIMAL`，仅在特定场景才退而求其次用 `BigInt`。**
+
+**首选：`DECIMAL` 定点数，按原始货币单位（元）存储**
 
 {% highlight sql %}
--- 可行但非最优：使用 DECIMAL 类型
--- price DECIMAL(10, 2)
-
--- 最佳方案：使用整数类型存储"分"
-price_in_cents INT -- 存储 1999，代表 19.99 元
+-- 首选：定点小数，直接按「元」存
+amount DECIMAL(19, 4) -- 存储 19.9900，即 19.99 元
 {% endhighlight %}
 
-> **注意**：使用 `DECIMAL(10, 2)` 存储金额并非错误，它能保证精度且可读性好。但在高并发、跨系统场景下，整数方案的性能和兼容性更优。
+为什么是 `DECIMAL(19, 4)`？
 
-**优势：**
+- **4 位小数**：足以容纳按比例分摊、汇率换算、税费计算等产生的「不足一分」的中间结果，避免过早舍入。
+- **19 位精度**：整数部分可表达到万亿级金额，几乎不会溢出。
+- **语义直观**：库里存的就是 `19.9900`，与业务上的「19.99 元」一一对应，全链路无需任何乘除换算。
 
-- **零误差**：整数运算完全避免了浮点数精度问题。
-- **高性能**：数据库进行整数计算和索引的效率远高于浮点数。
-- **跨系统兼容**：整数是所有系统中最通用的数据类型。
+> 这正是我最近一个项目的统一规范：**所有金额字段一律 `Decimal(19, 4)`、按「元」存储，绝不用 `Int` / `BigInt` / `Float`**；费率、折扣这类比例值则用 `Decimal(5, 4)`（如 `0.5000` 表示 50%）。
 
-**3. 前后端传输**
+**次选：`BigInt` 存最小货币单位（分）**
 
-后端直接返回以“分”为单位的整数，前端负责转换和展示。
+当数据库不支持可靠的定点类型、需要与「以分为单位的整数」的外部系统对接、或对极致性能有要求时，可以退一步用整数存「分」：
+
+{% highlight sql %}
+-- 次选：整数存「分」
+amount_in_cents BIGINT -- 存储 1999，代表 19.99 元
+{% endhighlight %}
+
+这里用 `BIGINT` 而非 `INT`：`INT` 上限约 21 亿分（≈ 2147 万元），电商大促或 B2B 场景极易溢出。
+
+**为什么把 `DECIMAL` 排在前面？一次真实的「BigInt → Decimal」迁移**
+
+我曾维护过一个最初用 `BigInt` 存「分」的系统，后来整体迁移到了 `Decimal(19, 4)` 存「元」。促使我们改弦更张的，正是整数分方案在全栈链路上的几个痛点：
+
+- **`BigInt` 不能直接 JSON 序列化**：`JSON.stringify(1999n)` 直接抛错。跨端传输要么手动转字符串，要么引入 `superjson` 这类带类型的序列化器，徒增心智负担。
+- **类型割裂**：系统里一旦同时存在 `BigInt`（金额）和 `Decimal`（费率），运算时频繁互转，极易出错。
+- **前端遍地 `* 100` / `/ 100`**：展示要除 100、提交要乘 100，任何一处漏掉就是一个金额 Bug，且很难测全。
+
+改用 `Decimal` 按「元」存储后，这些换算逻辑被彻底抹平：数据库、服务层、接口、前端看到的都是同一个「元」值，精度则交由 `Decimal` 类型保证。所以——**除非有明确的整数分诉求，否则默认就上 `DECIMAL`。**
+
+**3. 前后端传输：用字符串承载，别用 `number`**
+
+无论底层是 `DECIMAL` 还是 `BigInt`，**都不要把金额作为 JavaScript `number` 发给前端**——`number` 是 IEEE 754 浮点，会把你辛苦保住的精度又丢回去。正确做法是序列化为**字符串**：
+
+{% highlight javascript %}
+// 后端返回（Decimal 序列化为字符串，精度无损）
+{
+"amount": "19.99"
+}
+
+// 前端用 decimal.js 接住，展示时再格式化
+const amount = new Decimal(data.amount);
+{% endhighlight %}
+
+> 若使用 tRPC + `superjson` 这类「带类型」的序列化方案，`Decimal` / `BigInt` 会被自动识别并还原，无需手写字符串转换——但底层原理依然是「绝不用浮点数承载金额」。
 
 **4. 前端显示：`Intl.NumberFormat`**
 
@@ -87,12 +121,16 @@ usdFormatter.format(19.99); // "$19.99"
 
 **最佳实践：封装一个货币格式化工具函数**
 
+注意入参直接是「元」金额（字符串 / `Decimal`），不再做基数换算；只在「展示的最后一步」才转成 `number`，精度风险最小。
+
 {% highlight javascript %}
 // utils/currency.ts
+import Decimal from 'decimal.js';
+
 const formatters = new Map<string, Intl.NumberFormat>();
 
 export function formatCurrency(
-cents: number,
+amount: Decimal.Value, // 「元」金额，可为 string / number / Decimal
 currency: string = 'CNY',
 locale: string = 'zh-CN'
 ): string {
@@ -104,13 +142,12 @@ currency,
 }));
 }
 
-const amount = new Decimal(cents).div(100).toNumber();
-return formatters.get(key)!.format(amount);
+return formatters.get(key)!.format(new Decimal(amount).toNumber());
 }
 
 // 使用示例
-formatCurrency(1999); // "¥19.99"
-formatCurrency(1999, 'USD', 'en-US'); // "$19.99"
+formatCurrency('19.99'); // "¥19.99"
+formatCurrency('19.99', 'USD', 'en-US'); // "$19.99"
 {% endhighlight %}
 
 这个工具函数能自动处理千分位、货币符号、小数点的本地化，健壮且高效。
@@ -194,19 +231,21 @@ const formatted = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
 
 ## 四、终极方案总结
 
-| 场景         | 推荐方案         | 存储类型        | 关键点                   |
-| :----------- | :--------------- | :-------------- | :----------------------- |
-| **金额计算** | `decimal.js`     | -               | 运算层，保证过程精确     |
-| **金额存储** | 最小单位（分）   | `INT`/`BIGINT`  | 最佳方案，性能与兼容性优 |
-| **百分比**   | `DECIMAL(5,4)`   | `DECIMAL`       | 直接存储，无需基数转换   |
-| **时间存储** | `TIMESTAMPTZ(3)` | `TIMESTAMP`     | 带时区，毫秒精度         |
-| **时间传输** | ISO 8601         | `STRING`        | 跨系统通信标准           |
-| **时间操作** | `date-fns`       | -               | 功能库，避免手动计算     |
+| 场景             | 推荐方案          | 存储类型         | 关键点                       |
+| :--------------- | :---------------- | :--------------- | :--------------------------- |
+| **金额计算**     | `decimal.js`      | -                | 运算层，保证过程精确         |
+| **金额存储（首选）** | 定点小数，按「元」存 | `DECIMAL(19,4)`  | 默认方案，语义直观、无需换算 |
+| **金额存储（次选）** | 最小单位（分）    | `BIGINT`         | DB 无定点类型 / 对接整数系统时退选 |
+| **金额传输**     | 字符串            | `STRING`         | 切忌用 `number`，避免丢精度  |
+| **百分比 / 费率** | `DECIMAL(5,4)`   | `DECIMAL`        | 直接存储，无需基数转换       |
+| **时间存储**     | `TIMESTAMPTZ(3)`  | `TIMESTAMP`      | 带时区，毫秒精度             |
+| **时间传输**     | ISO 8601          | `STRING`         | 跨系统通信标准               |
+| **时间操作**     | `date-fns`        | -                | 功能库，避免手动计算         |
 
 核心思想其实很简单：
 
-- **金额**：用整数思维处理。将小数"放大"为最小货币单位（分）存储，仅在展示层"缩小"回去。
-- **百分比/费率**：用 `DECIMAL` 直接存储，简洁明了。
+- **金额**：存储优先用 `DECIMAL(19,4)` 按「元」存，运算交给 `Decimal` 类型保证精度；只有当数据库不支持定点类型、或需对接以「分」为单位的整数系统时，才退选 `BigInt`。传输用字符串，展示的最后一步才转回普通数字。
+- **百分比/费率**：用 `DECIMAL(5,4)` 直接存储，简洁明了。
 - **时间**：拥抱国际标准。统一使用 UTC 时间、ISO 8601 格式和毫秒精度。
 
 遵循这些实践，你就能在 JavaScript 中构建出金融级的健壮应用，从此告别因精度和时间问题引发的线上事故。
